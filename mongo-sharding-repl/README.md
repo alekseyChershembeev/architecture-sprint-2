@@ -9,7 +9,7 @@ docker compose up -d
 ```
 
 
-Выполнить скрипт для настройки шардирования и заполнения mongodb данными
+Выполнить скрипт для настройки шардирования, реполикации и заполнения mongodb данными
 
 ```shell
 ./scripts/mongo-init.sh
@@ -48,6 +48,7 @@ rs.initiate(
 exit();
 EOF
 
+echo "[INFO] Init shard2 with replics"
 docker compose exec -T shard2_repl1 mongosh --port 27021 --quiet <<EOF
 rs.initiate(
   {
@@ -66,8 +67,8 @@ EOF
 3. Добавление шардов в роутере
 ```shell
 docker compose exec -T mongos_router mongosh --port 27020 --quiet <<EOF
-sh.addShard( "shard1/shard1_repl1:27018");
-sh.addShard( "shard2/shard2_repl1:27021");
+sh.addShard( "shard1/shard1:27018");
+sh.addShard( "shard2/shard2:27019");
 EOF
 ```
 
@@ -80,7 +81,6 @@ use somedb
 for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})
 db.helloDoc.countDocuments() 
 EOF
-
 ```
 
 ## Как проверить
@@ -108,7 +108,3 @@ curl --silent http://ifconfig.me
 ## Доступные эндпоинты
 
 Список доступных эндпоинтов, swagger http://<ip виртуальной машины>:8080/docs
-
-## Схемы проекта
-
-`./schema`
